@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Flickr Photo Stream</title>
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+	
+	<!--jQuery script link-->
+	<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+	
+	<body>
+		<div class="jumbotron text-center">
+			<h1>Flickr Photo Stream</h1>
+			<!--Button to refresh the stream-->
+			<button type="button" class="btn btn-primary" onClick="window.location.reload()">Refresh!</button>
+		</div>
+		<!--Divs to hold the 4 latest posts on Flickr-->
+		<div class="container">
+			<!--Post 1-->
+			<div id="0" class="col-sm-3">
+			</div>
+			<!--Post 2-->
+			<div id="1" class="col-sm-3">
+			</div>
+			<!--Post 3-->
+			<div id="2" class="col-sm-3">
+			</div>
+			<!--Post 4-->
+			<div id="3" class="col-sm-3">
+			</div>
+		</div>
+ 
+		<!--Start of Javascript-->
+		<script>
+			//Main Function
+			(function() 
+			{
+				//Initialise arrays for each part of the post
+				var titleArr = [];
+				var authorArr = [];
+				var mediaArr = [];
+				var descriptionArr = [];
+				var tagsArr = [];
+				
+				//Code to get JSON output from Flickr API
+				var flickerAPI = "http://api.flickr.com/services/feeds/photos_public.gne?jsoncallback=?";
+				$.getJSON( flickerAPI, 
+				{
+					format: "json"
+				})
+				//Once the request is finished
+				.done(function(data) 
+				{
+					//For each loop to put each item into the correct array
+					$.each( data.items, function( i, item ) 
+					{
+						//Assign description to variable
+						var description = item.description;
+						//Split Description for author and title link
+						//Author Link
+						var desA = description.split('>');
+						//Title Link
+						var desT = description.split('\"');
+						
+						//Assign title to variable
+						var title = item.title;
+						//Create link to Flickr photo using link from description
+						var titleLink = '<a href=\"' + desT[3] + '\">';
+						//Join title and link
+						title = titleLink + title + '</a>';
+						
+						//Assign photo to media variable
+						var media = item.media.m;
+						//Add information to display correctly
+						media = '<img src=\"' + media + '" height="200" width="250"\>';
+						
+						//Assign tags to variable
+						var tags = item.tags;
+						
+						//Assign long author variable
+						var authorLong = item.author;
+						//Split author to get correct author name
+						var aFields = authorLong.split('(');
+						var author = aFields[1];
+						//Assign link to author Flickr page using link from description
+						var authorLink = desA[1] + '>';
+						//Add link tag and remove last ')' from author name
+						author = author.substring(0, author.length - 1);
+						author = authorLink + author + '</a>';
+						
+						//Push all values to their appropriate arrays
+						titleArr.push(title);
+						authorArr.push(author);
+						mediaArr.push(media);
+						descriptionArr.push(description);
+						tagsArr.push(tags);
+					});
+					
+					//Call printTable function using the arrays created
+					printTable(titleArr, authorArr, mediaArr, descriptionArr, tagsArr);
+				});
+			})();
+			
+			//Function to print the posts into a table
+			function printTable(titleArr, authorArr, mediaArr, descriptionArr, tagsArr)
+			{
+				//Create variables for table and for each row
+				var table;
+				var row1;
+				var row2;
+				var row3;
+				var row4;
+				
+				//For loop to iterate for each of the 4 posts
+				for (i=0; i<4; i++)
+				{
+					//Add HTML tags along with each item in the array
+					row1 = '<table class="table-bordered"><tr><td>' + mediaArr[i] + '</td></tr>';
+					row2 = '<tr><td>' + titleArr[i] + ' by ' + authorArr[i] + '</td></tr>';
+					row3 = '<tr><td>Description:</td></tr>';
+					row4 = '<tr><td>Tags: ' + tagsArr[i] + '</td></tr></table>';
+					//Concatenate all the rows together into the table variable
+					table = row1 + row2 + row3 + row4;
+					//Put the table into the correct div layout
+					document.getElementById(i).innerHTML = table;
+				}
+			}
+		</script>
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+	</body>
+</html>
